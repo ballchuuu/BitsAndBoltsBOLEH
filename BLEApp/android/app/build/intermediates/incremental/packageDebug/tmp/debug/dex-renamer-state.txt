@@ -1,0 +1,4 @@
+#Mon May 13 20:41:26 SGT 2019
+base.0=D\:\\Bits and Bolts\\BitsAndBoltsBOLEH\\BLEApp\\android\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
+path.0=classes.dex
+renamed.0=classes.dex
