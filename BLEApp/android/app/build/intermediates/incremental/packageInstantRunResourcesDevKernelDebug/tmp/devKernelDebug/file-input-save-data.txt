@@ -1,0 +1,7 @@
+#Internal package file, do not edit.
+#Tue May 14 21:24:24 SGT 2019
+0.baseType=DIRECTORY
+0.base=C\:\\Users\\twick\\Documents\\GitHub\\BitsAndBoltsBOLEH\\BLEApp\\android\\app\\build\\intermediates\\merged_assets\\devKernelDebug\\mergeDevKernelDebugAssets\\out
+0.path=kernel-manifest.json
+0.set=ASSET
+count=1
