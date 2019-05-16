@@ -95,6 +95,8 @@ public class MainActivity extends AppCompatActivity {
                 boolean on = ((ToggleButton) v).isChecked();
                 if (on) {
                     //do something when toggle is on
+                    macAddresses.clear();
+                    rssis.clear();
                     bluetoothScanner.startScan(mScanCallback);
                     Toast.makeText(getApplicationContext(), "Start scan!", Toast.LENGTH_SHORT).show();
                     Log.i("scan", "Started scan");
