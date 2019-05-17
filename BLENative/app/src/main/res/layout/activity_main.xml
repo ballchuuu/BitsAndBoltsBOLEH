@@ -13,8 +13,24 @@
         android:layout_height="wrap_content"
         android:text="ToggleButton" />
 
+    <TextView
+        android:text="BLE"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+
     <ListView
         android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:text="WIFI"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
+    <ListView
+        android:id="@+id/wifiList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
