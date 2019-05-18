@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, json, render_template
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime 
+from sqlalchemy.sql.functions import func
 import psycopg2
 import pgpubsub
 import threading
