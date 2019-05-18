@@ -1,19 +1,17 @@
-from flask import Flask, render_template
-from flask_socketio import SocketIO
+from flask import Flask, jsonify, request, json
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime 
+import datetime
+
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+app.debug = True #to set in staging development
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://bitsbolts:password@localhost:5432/bitsbolts'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
+from models import Location
 
 @app.route("/")
 def hello_world():
-    return render_template("iot/index.html")
-    
-@app.route("/sysmon")
-def sysmon():
-    return render_template("iot/sysmon.html")
-
-
-if __name__ == '__main__':
-    socketio.run(app)
+    return "hello"
