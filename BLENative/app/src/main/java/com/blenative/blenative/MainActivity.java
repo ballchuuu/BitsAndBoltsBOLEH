@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -22,9 +21,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,12 +53,16 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Integer> rssis = new ArrayList();
     private ArrayList<ArrayList<Integer>> rssiAvgs = new ArrayList();
 
+    private BroadcastReceiver receiver;
+
     private WifiManager wifiManager;
+    private volatile boolean wifiScanDone = true;
 
     private ArrayList<String> wifiMacAddresses = new ArrayList<>();
     private ArrayList<Integer> wifiRssis = new ArrayList();
     private ArrayList<ArrayList<Integer>> wifiRssiAvgs = new ArrayList();
-
+    private JSONObject payload;
+    private EditText editText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.list);
         wifiListView = (ListView) findViewById(R.id.wifiList);
+        editText = (EditText) findViewById(R.id.editText);
 
         mHandler = new Handler();
         final BluetoothManager bluetoothManager =
@@ -104,6 +113,22 @@ public class MainActivity extends AppCompatActivity {
 
         Toast.makeText(getApplicationContext(), "Started!", Toast.LENGTH_SHORT).show();
 
+        receiver=new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(wifiScanDone){
+                    return;
+                }
+                Log.i("wifi broadcast", "received!");
+                parseWifi();
+                wifiScanDone = true;
+            }
+        };
+
+        IntentFilter filter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        registerReceiver(receiver, filter);
+
+
         final ToggleButton b = (ToggleButton) findViewById(R.id.myButton);
         b.setOnClickListener(new View.OnClickListener()
         {
@@ -111,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v){
                 boolean on = ((ToggleButton) v).isChecked();
                 if (on) {
+                    Toast.makeText(getApplicationContext(), "pressed!", Toast.LENGTH_SHORT).show();
                     //do something when toggle is on
                     macAddresses.clear();
                     rssis.clear();
@@ -121,28 +147,33 @@ public class MainActivity extends AppCompatActivity {
                     wifiRssiAvgs.clear();
 //                    bluetoothScanner.startScan(mScanCallback);
                     Toast.makeText(getApplicationContext(), "Start scan!", Toast.LENGTH_SHORT).show();
-                    long start = System.currentTimeMillis();
+                    payload = new JSONObject();
+                    wifiScanDone = false;
+                    wifiManager.startScan();
                     bluetoothScanner.startScan(mScanAvgCallback);
-                    Thread t = new Thread(new Runnable(){
-
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
                         public void run() {
-
-                            long now = System.currentTimeMillis();
-                            while (now - start < 15000) {
-                                //do nothing
-                                now = System.currentTimeMillis();
-                            }
                             bluetoothScanner.stopScan(mScanAvgCallback);
                             b.toggle();
-//                            Toast.makeText(getApplicationContext(), "Stop scan!", Toast.LENGTH_SHORT).show();
+                            parseWifi();
+                            while(!wifiScanDone){
+                                //do nothing
+                            }
+                            parseBLE();
+//                              generatePayload();
+                            String[] xy = editText.getText().toString().split(" ");
+                            try {
+                                payload.put("x", xy[0]);
+                                payload.put("y", xy[1]);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
 
+                            Log.i("Response", payload.toString());
+                            new LocalizationTask().execute(payload.toString());
                         }
-                    });
-//                    Log.i("scan", "Started scan");
-                    t.start();
-                    
-                    Log.i("wifi scan", wifiManager.getScanResults().toString());
-                    parseWifi();
+                    }, 15000);
 
                 } else {
                     //do something when toggle is off
@@ -153,16 +184,72 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        Button mapButton = (Button) findViewById(R.id.toMap);
+
+        mapButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v){
+                Intent myIntent = new Intent(getApplicationContext(), MapActivity.class);
+                startActivity(myIntent);
+            }
+        });
     }
 
     public void parseWifi(){
         List<android.net.wifi.ScanResult> wifiScans = wifiManager.getScanResults();
         for(android.net.wifi.ScanResult s : wifiScans){
             wifiMacAddresses.add(s.BSSID.substring(0, 5) + " " + s.SSID);
-            rssis.add(s.level);
+            wifiRssis.add(s.level);
+            try {
+                payload.put(s.BSSID + " " + s.SSID, s.level);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
-        WifiListAdapter listAdapter = new WifiListAdapter(getApplicationContext(), wifiMacAddresses, rssis);
+        WifiListAdapter listAdapter = new WifiListAdapter(getApplicationContext(), wifiMacAddresses, wifiRssis);
         wifiListView.setAdapter(listAdapter);
+    }
+
+    public void parseBLE(){
+        Log.i("Response ble", "" + rssiAvgs.size());
+        for(int i = 0; i < rssiAvgs.size(); i++){
+            try {
+                payload.put(macAddresses.get(i), average(rssiAvgs.get(i)));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private int average(ArrayList<Integer> list){
+        int sum = 0;
+        for(Integer i : list){
+            sum += i;
+        }
+        return sum / list.size();
+    }
+
+    private void generatePayload(){
+        for(int i = 0; i < rssiAvgs.size(); i++){
+            try {
+                payload.put(macAddresses.get(i), average(rssiAvgs.get(i)));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        Log.i("Response",macAddresses.get(0));
+        for(int i = 0; i < wifiRssiAvgs.size(); i++){
+            try {
+                payload.put(wifiMacAddresses.get(i), average(wifiRssiAvgs.get(i)));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        Log.i("Response", payload.toString());
+        new LocalizationTask().execute(payload.toString());
+
+
     }
 
 
@@ -266,12 +353,26 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    class WifiBroadcastReceiver extends BroadcastReceiver {
+        private static final String TAG = "MyBroadcastReceiver";
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Action: " + intent.getAction() + "\n");
+            sb.append("URI: " + intent.toUri(Intent.URI_INTENT_SCHEME).toString() + "\n");
+            String log = sb.toString();
+            Log.d(TAG, log);
+            Toast.makeText(context, log, Toast.LENGTH_LONG).show();
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
             bluetoothScanner.stopScan(mScanCallback);
         }
+
     }
 
 
@@ -280,6 +381,9 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         if (bluetoothAdapter != null && bluetoothAdapter.isEnabled()) {
             bluetoothScanner.stopScan(mScanCallback);
+        }
+        if(receiver!=null){
+            unregisterReceiver(receiver);
         }
     }
 }

@@ -13,6 +13,14 @@
         android:layout_height="wrap_content"
         android:text="ToggleButton" />
 
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="x y" />
+
     <TextView
         android:text="BLE"
         android:layout_width="match_parent"
@@ -33,5 +41,11 @@
         android:id="@+id/wifiList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/toMap"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Open Map" />
 
 </LinearLayout>
