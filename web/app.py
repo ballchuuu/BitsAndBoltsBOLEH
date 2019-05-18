@@ -3,7 +3,7 @@ from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime 
 import pgpubsub
-import threaded
+import threading
 import datetime
 import time 
 
@@ -11,7 +11,7 @@ import time
 app = Flask(__name__)
 app.debug = True #to set in staging development
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://bitsbolts:bitsbolts@localhost:5432/bitsbolts'
-app.config['DB_HOST'] = 'localhost:5432'
+app.config['DB_HOST'] = '127.0.0.1'
 app.config['DB_USERNAME'] = 'bitsbolts'
 app.config['DB_PASSWORD'] = 'bitsbolts'
 app.config['DB_NAME'] = 'bitsbolts'
@@ -30,7 +30,7 @@ def hello_world():
 def activate_job():
     def run_job():
         pubsub = pgpubsub.connect(host=app.config['DB_HOST'], user=app.config['DB_USERNAME'],password=app.config['DB_PASSWORD'], dbname=app.config['DB_NAME'])
-        pubsub.listen('locations_update')
+        pubsub.listen('location_update')
         while True:
             for e in pubsub.events():
                 temp = json.loads(e.payload)
