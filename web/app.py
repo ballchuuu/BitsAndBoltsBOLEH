@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, json
+from flask import Flask, jsonify, request, json, render_template
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime 
@@ -40,6 +40,20 @@ exits = [
     (19, 7, 21, 5),
     (9, 5, 12, 4)
 ]
+
+def inside(grid, x, y):
+    return x >= grid[0] and x <= grid[2] and y <= grid[1] and y >= grid[3]
+
+def is_exit(x, y):
+    for e in exits:
+        if inside(e, x, y):
+            return True
+    
+    return False
+
+# def compute_shortest_route():
+#     import pandas as pd
+
 
 @app.before_first_request
 def activate_job():
