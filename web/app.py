@@ -32,6 +32,16 @@ socketio = SocketIO(app)
 def hello_world():
     return render_template("index.html")
 
+@app.route("/api/crowd_report", methods=["GET", "POST"])
+def crowd_report():
+    # Load from db
+    people = [(24, 14), (25, 23), (24, 14)]
+    counter = OrderedDict(Counter(people))
+
+    return jsonify({"x": [p[0] for p in counter.keys()],
+                    "y": [p[1] for p in counter.keys()],
+                    "count": [c*10 for c in counter.values()]})
+
 exits = [
     (27, 27, 25, 31), # SR1 main exit
     (22, 32, 23, 30), # SR1 side exit 1
