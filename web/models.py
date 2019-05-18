@@ -8,7 +8,7 @@ class Location(db.Model):
 	x = db.Column(db.Float, nullable=False)
 	y = db.Column(db.Float, nullable=False)
 	time = db.Column(db.DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-	route = db.Column(db.Float, nullable=True)
+	route = db.Column(db.Integer, nullable=True)
 	load_balance = db.Column(db.Boolean, nullable=True)
 	
 	def __init__(self, user, x,y,route):
