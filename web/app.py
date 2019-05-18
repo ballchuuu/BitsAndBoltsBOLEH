@@ -6,7 +6,7 @@ import datetime
 
 app = Flask(__name__)
 app.debug = True #to set in staging development
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://bitsbolts:password@localhost:5432/bitsbolts'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://bitsbolts:bitsbolts@localhost:5432/bitsbolts'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
