@@ -26,6 +26,20 @@ from models import Location
 def hello_world():
     return "hello"
 
+exits = [
+    (15, 38, 18, 36),
+    (22, 32, 23, 30),
+    (22, 29, 23, 27),
+    (37, 29, 27, 40),
+    (7, 28, 9, 26),
+    (27, 27, 25, 31),
+    (9, 25, 11, 22),
+    (21, 25, 23, 21),
+    (34, 12, 36, 10),
+    (36, 10, 38, 8),
+    (19, 7, 21, 5),
+    (9, 5, 12, 4)
+]
 
 @app.before_first_request
 def activate_job():
