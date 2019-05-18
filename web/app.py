@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, json
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime 
+import psycopg2
 import pgpubsub
 import threading
 import datetime
@@ -26,7 +27,7 @@ def hello_world():
     return "hello"
 
 
-@app.route("/testing")
+@app.before_first_request
 def activate_job():
     def run_job():
         pubsub = pgpubsub.connect(host=app.config['DB_HOST'], user=app.config['DB_USERNAME'],password=app.config['DB_PASSWORD'], dbname=app.config['DB_NAME'])
@@ -34,8 +35,11 @@ def activate_job():
         while True:
             for e in pubsub.events():
                 temp = json.loads(e.payload)
-                temp['type'] = 'apt'
-                socketio.emit('updates', json.dumps(temp), namespace='/socket')
+                print(temp)
+                # temp['type'] = 'apt'
+                # socketio.emit('updates', json.dumps(temp), namespace='/socket')
             time.sleep(10)
+            
     thread1 = threading.Thread(target=run_job)
     thread1.start()
+
