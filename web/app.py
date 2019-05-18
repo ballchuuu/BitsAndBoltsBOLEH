@@ -109,13 +109,16 @@ def load_balance():
     try:
         exits = {0:0,1:0,2:0,3:0,4:0,5:0}
         curr_time = datetime.datetime.utcnow()
-        print(curr_time)
+        
+        # updates the table to remove users who have not connected for more than 60 seconds
         users = Location.query.filter_by(load_balance=False).all()
         for j in users:
             if (curr_time - j.time).total_seconds() < 60:
                 Location.route = True
                 db.session.commit()
         count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = False).group_by(Location.route).all()
+        
+        #returns number of people at each exit in a dictionary
         for i in count:
             exits[i[0]] = i[1]
         return jsonify(exits)
