@@ -62,11 +62,14 @@ for x in range(sr1[0], sr1[2]):
         }
         sr_df = sr_df.append(row, ignore_index=True)
 
+def inside(rect, x, y):
+    return x >= rect[0] and x <= rect[2] and y <= rect[1] and y >= rect[3]
+
 def connect(start, ends):
     return [[start, (p[0], p[1])] for p in ends]
 
 def find_shortest_route(x, y):
-    if x >= sr1[0] and y <= sr1[1] and x <= sr1[2] and y >= sr1[3]:
+    if inside(sr1, x, y):
         row = sr_df[sr_df.x==x][sr_df.y==y]
         distances = row.iloc[:, 2:].values.tolist()
         shortest = min(distances)
@@ -76,9 +79,6 @@ def find_shortest_route(x, y):
         return connect(pri_exits[0], sec_exits)
 
 print(find_shortest_route(27, 27))
-
-def inside(rect, x, y):
-    return x >= rect[0] and x <= rect[2] and y <= rect[1] and y >= rect[3]
 
 def is_exit(x, y):
     for e in exits:
