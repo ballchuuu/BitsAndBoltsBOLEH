@@ -3,7 +3,7 @@ from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime 
 from sqlalchemy.sql.functions import func
-from keras import load_model
+from keras.models import load_model
 import psycopg2
 import pgpubsub
 import threading
