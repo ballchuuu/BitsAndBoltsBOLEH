@@ -41,6 +41,24 @@ exits = [
 ]
 sr1 = (23, 37, 35, 26)
 
+def load_balance():
+
+    exits = {0:0,1:0,2:0,3:0,4:0,5:0}
+    curr_time = datetime.datetime.utcnow()
+
+    # updates the table to remove users who have not connected for more than 60 seconds
+    users = Location.query.filter_by(load_balance=False).all()
+    for j in users:
+        if (curr_time - j.time).total_seconds() < 60:
+            Location.route = True
+            db.session.commit()
+    count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = False).group_by(Location.route).all()
+    
+    #returns number of people at each exit in a dictionary
+    for i in count:
+        exits[i[0]] = i[1]
+    return (exits)
+
 def midpt(rect):
     return ((rect[0]+rect[2])/2, (rect[1]+rect[3])/2)
 
@@ -74,7 +92,18 @@ def find_shortest_route(x, y):
         row = sr_df[sr_df.x==x][sr_df.y==y]
         distances = row.iloc[:, 2:].values.tolist()
         shortest = min(distances)
-        return "exit" + str(distances.index(shortest))
+
+        # get count for exit count
+        exit_count = load_balance()
+
+        for i in range(len(exit_count.keys())):
+            shortest = min(distances)
+            best_exit = int(distances.index(shortest))
+            if exit_count[best_exit] < 5:
+                #insert or update the db with the x,y,route(exit)
+                return best_exit
+            else:
+                distances = distances.remove(shortest)
     else:
         # From primary to secondary exits
         return connect(pri_exits[0], sec_exits)
@@ -103,24 +132,3 @@ def activate_job():
             
     thread1 = threading.Thread(target=run_job)
     thread1.start()
-
-def load_balance():
-
-    exits = {0:0,1:0,2:0,3:0,4:0,5:0}
-    curr_time = datetime.datetime.utcnow()
-
-    # updates the table to remove users who have not connected for more than 60 seconds
-    users = Location.query.filter_by(load_balance=False).all()
-    for j in users:
-        if (curr_time - j.time).total_seconds() < 60:
-            Location.route = True
-            db.session.commit()
-    count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = False).group_by(Location.route).all()
-    
-    #returns number of people at each exit in a dictionary
-    for i in count:
-        exits[i[0]] = i[1]
-    return (exits)
-
-
-
