@@ -102,3 +102,21 @@ def activate_job():
             
     thread1 = threading.Thread(target=run_job)
     thread1.start()
+
+@app.route('/loadBalance', methods = ['GET'])
+def load_balance():
+    try:
+        exits = {0:0,1:0,2:0,3:0,4:0,5:0}
+        curr_time = datetime.datetime.utcnow()
+        print(curr_time)
+        users = Location.query.filter_by(load_balance=False).all()
+        for j in users:
+            if (curr_time - j.time).total_seconds() < 60:
+                Location.route = True
+                db.session.commit()
+        count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = False).group_by(Location.route).all()
+        for i in count:
+            exits[i[0]] = i[1]
+        return jsonify(exits)
+    except Exception as e:
+        return(str(e))
