@@ -30,7 +30,7 @@ from models import Location
 
 @app.route("/")
 def hello_world():
-    return "hello"
+    return render_template("index.html")
 
 exits = [
     (27, 27, 25, 31), # SR1 main exit
