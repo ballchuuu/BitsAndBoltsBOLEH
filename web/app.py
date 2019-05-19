@@ -132,11 +132,10 @@ def find_shortest_route(x, y):
         exit_count = load_balance()
         for i in range(len(exit_count.keys())):
             shortest = min(distances)
-            best_exit = int(distances.index(shortest)) + 3
+            best_exit = int(distances.index(shortest))
             if exit_count[best_exit] < 5:
                 #insert or update the db with the x,y,route(exit)
-                output = [pri_exits[best_exit]]
-                output.append(sec_exits[4])
+                output = [sec_exits[best_exit]]
                 return output
             else:
                 distances = distances.remove(shortest)
