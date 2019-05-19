@@ -43,7 +43,7 @@ def crowd_report():
                     "count": [c*10 for c in counter.values()]})
 
 exits = [
-    (27, 27, 25, 31), # SR1 main exit
+    (27, 27, 31, 25), # SR1 main exit
     (22, 32, 23, 30), # SR1 side exit 1
     (22, 29, 23, 27), # SR1 side exit 2
     (37, 29, 27, 40), # back of seminar rm
