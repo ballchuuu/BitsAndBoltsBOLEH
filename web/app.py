@@ -13,7 +13,7 @@ import pgpubsub
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from keras.models import load_model
-from models import Location
+
 from sqlalchemy.sql.functions import func
 
 app = Flask(__name__)
@@ -27,6 +27,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
+from models import Location
 
 @app.route("/")
 def hello_world():
@@ -77,6 +78,9 @@ def load_balance():
 def midpt(rect):
     return ((rect[0]+rect[2])/2, (rect[1]+rect[3])/2)
 
+def inside(rect, x, y):
+    return x >= rect[0] and x <= rect[2] and y <= rect[1] and y >= rect[3]
+
 exit_points = [midpt(e) for e in exits]
 pri_exits = exit_points[:3]
 sec_exits = exit_points[3:]
@@ -107,9 +111,6 @@ for x in range(area[0], area[2]):
                 'exit5': euclidean([x, y], list(sec_exits[2]))
             }
             outside_df = outside_df.append(row, ignore_index=True)
-
-def inside(rect, x, y):
-    return x >= rect[0] and x <= rect[2] and y <= rect[1] and y >= rect[3]
 
 def find_shortest_route(x, y):
     if inside(sr1, x, y):
@@ -353,8 +354,8 @@ def getloc():
         new_loc = Location(user=jsonObj['UUID'], x=int(coords[0]), y=int(coords[1]))
         db.session_add(new_loc)
     else:
-        loc.x=coords[0]
-        loc.y=coords[1]
+        loc[0].x=int(coords[0])
+        loc[0].y=int(coords[1])
     db.session.commit()
     output = {'x': str(coords[0]), 'y': str(coords[1])}
     output['route'] = find_shortest_route(int(coords[0]), int(coords[1]))
@@ -370,7 +371,7 @@ def activate_job():
                 temp = json.loads(e.payload)
                 print(temp)
                 # temp['type'] = 'apt'
-                # socketio.emit('updates', json.dumps(temp), namespace='/socket')
+                socketio.emit('updates', json.dumps(temp), namespace='/socket')
             time.sleep(10)
             
     thread1 = threading.Thread(target=run_job)

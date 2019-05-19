@@ -15,7 +15,7 @@ class Location(db.Model):
 		self.user = user
 		self.x = x
 		self.y = y
-		self.load_balance = False
+		self.load_balance = True
 
 	def __repr__(self):
 		return 'x: {}, y:{}'.format(self.x, self.y)
