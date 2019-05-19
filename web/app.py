@@ -35,7 +35,10 @@ def hello_world():
 @app.route("/api/crowd_report", methods=["GET", "POST"])
 def crowd_report():
     # Load from db
-    people = [(24, 14), (25, 23), (24, 14)]
+    people = []
+    q= Location.query.filter_by(load_balance=True).all()
+    for j in q:
+        people.append((j.x,j.y))
     counter = OrderedDict(Counter(people))
 
     return jsonify({"x": [p[0] for p in counter.keys()],
@@ -58,12 +61,12 @@ def load_balance():
     curr_time = datetime.utcnow()
 
     # updates the table to remove users who have not connected for more than 60 seconds
-    users = Location.query.filter_by(load_balance=False).all()
+    users = Location.query.filter_by(load_balance=True).all()
     for j in users:
         if (curr_time - j.time).total_seconds() > 60:
-            j.load_balance = True
+            j.load_balance = False
             db.session.commit()
-    count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = False).group_by(Location.route).all()
+    count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = True).group_by(Location.route).all()
     
     #returns number of people at each exit in a dictionary
     for i in count:
@@ -99,8 +102,6 @@ outside_dict = {
     'exit4': euclidean(list(pri_exits[0]), list(sec_exits[1])),
     'exit5': euclidean(list(pri_exits[0]), list(sec_exits[2])),
 }
-
-print(outside_dict)
 
 def inside(rect, x, y):
     return x >= rect[0] and x <= rect[2] and y <= rect[1] and y >= rect[3]
