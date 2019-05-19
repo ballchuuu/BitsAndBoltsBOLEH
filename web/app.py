@@ -61,9 +61,9 @@ def load_balance():
     users = Location.query.filter_by(load_balance=True).all()
     for j in users:
         if (curr_time - j.time).total_seconds() > 60:
-            j.load_balance = True
+            j.load_balance = False
             db.session.commit()
-    count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = False).group_by(Location.route).all()
+    count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = True).group_by(Location.route).all()
     
     #returns number of people at each exit in a dictionary
     for i in count:
