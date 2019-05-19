@@ -58,7 +58,7 @@ def load_balance():
     curr_time = datetime.utcnow()
 
     # updates the table to remove users who have not connected for more than 60 seconds
-    users = Location.query.filter_by(load_balance=False).all()
+    users = Location.query.filter_by(load_balance=True).all()
     for j in users:
         if (curr_time - j.time).total_seconds() > 60:
             j.load_balance = True
