@@ -37,7 +37,7 @@ def hello_world():
 def crowd_report():
     # Load from db
     people = []
-    q= Location.query.filter_by(load_balance=True).all()
+    q= Location.query.all()
     for j in q:
         people.append((j.x,j.y))
     counter = OrderedDict(Counter(people))
@@ -65,7 +65,8 @@ def load_balance():
     # updates the table to remove users who have not connected for more than 60 seconds
     users = Location.query.filter_by(load_balance=True).all()
     for j in users:
-        if (curr_time - j.time).total_seconds() > 60:
+        if (curr_time - j.time).total_seconds() > 60000:
+            print((curr_time - j.time).total_seconds())
             j.load_balance = False
             db.session.commit()
     count = db.session.query(Location.route, func.count(Location.user)).filter_by(load_balance = True).group_by(Location.route).all()
@@ -140,7 +141,7 @@ def find_shortest_route(x, y):
         for i in range(len(exit_count.keys())):
             shortest = min(distances)
             best_exit = int(distances.index(shortest))
-            if exit_count[best_exit] < 5:
+            if exit_count[best_exit +3] < 5:
                 #insert or update the db with the x,y,route(exit)
                 output = [sec_exits[best_exit]]
                 return output
