@@ -19,7 +19,7 @@ public class LocalizationTask extends AsyncTask<String, Void, String> {
     protected String doInBackground(String... params) {
         OutputStreamWriter write = null;
         try {
-            URL url = new URL("http://13.250.107.52/students/");
+            URL url = new URL(params[0]);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
             connection.setRequestMethod("POST");
@@ -30,7 +30,7 @@ public class LocalizationTask extends AsyncTask<String, Void, String> {
             connection.setDoOutput(true);
             write = new OutputStreamWriter (connection.getOutputStream());
 
-            write.write(params[0]);
+            write.write(params[1]);
             write.flush();
             Log.e("Response", connection.getResponseCode() + "");
 
@@ -59,6 +59,7 @@ public class LocalizationTask extends AsyncTask<String, Void, String> {
         // this is executed on the main thread after the process is over
         // update your UI here
 //        Toast.makeText(getApplicationContext(), "Start scan!", Toast.LENGTH_SHORT).show();
+
     }
 
 }

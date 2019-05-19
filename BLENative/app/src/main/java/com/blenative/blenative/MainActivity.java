@@ -11,6 +11,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
@@ -32,6 +33,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import static android.support.v4.app.ActivityCompat.startActivityForResult;
@@ -41,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothLeScanner bluetoothScanner;
     private Handler mHandler;
-    private ArrayAdapter arrayAdapter;
     private ListView listView;
     private ListView wifiListView;
     private String[] whitelist = {"D9:9B:DE:C0:3E:8F","CC:EA:DB:79:AD:73","FD:89:D3:B9:BC:9A",
@@ -68,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Intent serviceIntent = new Intent(this, BLEService.class);
-        startService(serviceIntent);
 
         //request permissions
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED
@@ -156,11 +155,11 @@ public class MainActivity extends AppCompatActivity {
                         public void run() {
                             bluetoothScanner.stopScan(mScanAvgCallback);
                             b.toggle();
-                            parseWifi();
+                            parseBLE();
                             while(!wifiScanDone){
                                 //do nothing
                             }
-                            parseBLE();
+//                            parseWifi();
 //                              generatePayload();
                             String[] xy = editText.getText().toString().split(" ");
                             try {
@@ -171,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             Log.i("Response", payload.toString());
-                            new LocalizationTask().execute(payload.toString());
+                            new LocalizationTask().execute("http://13.250.107.52/students/", payload.toString());
                         }
                     }, 15000);
 
@@ -247,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         Log.i("Response", payload.toString());
-        new LocalizationTask().execute(payload.toString());
+        new LocalizationTask().execute("http://13.250.107.52/students/", payload.toString());
 
 
     }

@@ -102,13 +102,36 @@ def find_shortest_route(x, y):
             best_exit = int(distances.index(shortest))
             if exit_count[best_exit] < 5:
                 #insert or update the db with the x,y,route(exit)
-                return best_exit
+                output = [pri_exits[best_exit]]
+                output.append(sec_exits[4])
+                return output
             else:
                 distances = distances.remove(shortest)
     else:
         # From primary to secondary exits
         return connect(pri_exits[0], sec_exits)
 
+def find_sec_shortest_route(x, y):
+    # if inside(sr1, x, y):
+        row = sr_df[sr_df.x==x][sr_df.y==y]
+        distances = row.iloc[:, 2:].values.tolist()
+        shortest = min(distances)
+
+        # get count for exit count
+        exit_count = load_balance()
+
+        for i in range(len(exit_count.keys())):
+            shortest = min(distances)
+            best_exit = int(distances.index(shortest))
+            if exit_count[best_exit] < 5:
+                #insert or update the db with the x,y,route(exit)
+                return [pri_exits[best_exit], find_shortest_route(pri_exits[best_exit])]
+            else:
+                distances = distances.remove(shortest)
+    else:
+        # From primary to secondary exits
+        return connect(pri_exits[0], sec_exits)
+        
 print(find_shortest_route(27, 27))
 
 def is_exit(x, y):
@@ -117,10 +140,8 @@ def is_exit(x, y):
             return True
     
     return False
-
-@app.route("/getloc", methods=["POST"])
-def getloc():
-    model = load_model('my_model.h5')
+    
+def getCoords(jsonObj):
     headers = ['c4:12:f5:78:2c:38 NUS SC SR1 AV',
                  '28:cf:e9:83:0d:a4 NUS Comp AV',
                  '84:b8:02:10:c7:78 ',
@@ -299,15 +320,23 @@ def getloc():
                  'a8:9d:21:c4:0e:f8 ',
                  'a8:9d:21:f3:87:d3 ',
                  'a8:9d:21:44:04:15 ']
-    json = request.data
+    model = load_model('my_model.h5')
     input = []
     for s in headers:
-        if s in json:
-            input.append(int(json[s]) + 100)
+        if s in jsonObj:
+            input.append(int(jsonObj[str(s)]) + 100)
         else:
             input.append(0)
-    coords = model.predict([input])
-    return json.dumps({'x': coords[0], 'y': coords[1]})
+    coords = model.predict(np.array([input]))
+    return coords[0]
+    
+@app.route("/getloc", methods=["POST"])
+def getloc():
+    jsonObj = json.loads(request.data)
+    coords = getCoords(jsonObj)
+    output = {'x': str(coords[0]), 'y': str(coords[1])}
+    output['route'] = find_shortest_route(int(coords[0]), int(coords[1]))
+    return json.dumps(output)
     
 @app.before_first_request
 def activate_job():

@@ -27,9 +27,6 @@
         </activity>
 
         <activity android:name=".MapActivity" />
-        <service
-            android:name="BLEService"
-            android:exported="false"/>
     </application>
 
 </manifest>
