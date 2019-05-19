@@ -54,6 +54,7 @@ exits = [
     (23, 12, 30, 11) # glass doors to foyer
 ]
 sr1 = (23, 37, 35, 26)
+area = (0, 40, 40, 0)
 
 def load_balance():
 
@@ -82,10 +83,8 @@ sec_exits = exit_points[3:]
 
 # Inside SR1: Compute distance from each grid to each primary exit
 sr_df = pd.DataFrame(columns=['x', 'y', 'exit0', 'exit1', 'exit2'])
-
 for x in range(sr1[0], sr1[2]):
     for y in range(sr1[3], sr1[1]):
-        distances = [euclidean([x, y], list(p)) for p in pri_exits]
         row = {
             'x': x,
             'y': y,
@@ -95,13 +94,18 @@ for x in range(sr1[0], sr1[2]):
         }
         sr_df = sr_df.append(row, ignore_index=True)
 
-outside_dict = {
-    'x': pri_exits[0][0],
-    'y': pri_exits[0][1],
-    'exit3': euclidean(list(pri_exits[0]), list(sec_exits[0])),
-    'exit4': euclidean(list(pri_exits[0]), list(sec_exits[1])),
-    'exit5': euclidean(list(pri_exits[0]), list(sec_exits[2])),
-}
+# Outside: Compute distance from each grid to each secondary exit
+outside_df = pd.DataFrame(columns=['x', 'y', 'exit3', 'exit4', 'exit5'])
+for x in range(area[0], area[2]):
+    for y in range(area[3], area[1]):
+        row = {
+            'x': x,
+            'y': y,
+            'exit3': euclidean([x, y], list(sec_exits[0])),
+            'exit4': euclidean([x, y], list(sec_exits[1])),
+            'exit5': euclidean([x, y], list(sec_exits[2]))
+        }
+        outside_df = outside_df.append(row, ignore_index=True)
 
 def inside(rect, x, y):
     return x >= rect[0] and x <= rect[2] and y <= rect[1] and y >= rect[3]
@@ -126,18 +130,18 @@ def find_shortest_route(x, y):
             else:
                 distances = distances.remove(shortest)
     else:
-        # From primary to secondary exits
-        distances = [outside_dict['exit3'], outside_dict['exit4'], outside_dict['exit5']]
+        row = outside_df[outside_df.x==x][outside_df.y==y]
+        distances = row.iloc[:, 2:].values.tolist()
         shortest = min(distances)
         
         exit_count = load_balance()
         for i in range(len(exit_count.keys())):
             shortest = min(distances)
-            best_exit = int(distances.index(shortest)) + 3
+            best_exit = int(distances.index(shortest))
             if exit_count[best_exit] < 5:
                 #insert or update the db with the x,y,route(exit)
                 output = [pri_exits[best_exit]]
-                output.append(sec_exits[4])
+                output.append(sec_exits[best_exit])
                 return output
             else:
                 distances = distances.remove(shortest)
