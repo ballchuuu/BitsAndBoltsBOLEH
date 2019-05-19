@@ -1,37 +1,43 @@
-function plotFloorPlan() {
-  var trace1 = {
-    x: [0],
-    y: [0],
-    type: 'scatter'
-  };
-  var layout = {
-    autosize: false,
-    images: [
-      {
-        source: 'https://raw.githubusercontent.com/ballchuuu/BitsAndBoltsBOLEH/master/layouts/COM1_L2_2.jpg?token=AI7O7MA32OC47W44IUC6QB245AH7A',
-        xref: 'x',
-        yref: 'y',
-        x: 0,
-        y: 40,
-        sizex: 40,
-        sizey: 40,
-        sizing: 'contain',
-        opacity: 0.5,
-        layer: 'below'
-      }],
-    width: 1000,
-    height: 1000,
-    xaxis: {
-      range: [0, 40],
-      dtick: 1
-    },
-    yaxis: {
-      range: [0, 40],
-      dtick: 1
-    }
-  };
-
-  Plotly.newPlot('plotly-div', [trace1], layout);
+function plotFloor() {
+  $.getJSON('/api/crowd_report', function(data) {
+    var trace1 = {
+      x: data.x,
+      y: data.y,
+      mode: 'markers',
+      marker: {
+        size: data.count
+      },
+      type: 'scatter'
+    };
+    var layout = {
+      autosize: false,
+      images: [
+        {
+          source: 'https://raw.githubusercontent.com/ballchuuu/BitsAndBoltsBOLEH/master/layouts/COM1_L2_2.jpg?token=AI7O7MA32OC47W44IUC6QB245AH7A',
+          xref: 'x',
+          yref: 'y',
+          x: 0,
+          y: 40,
+          sizex: 40,
+          sizey: 40,
+          sizing: 'contain',
+          opacity: 0.5,
+          layer: 'below'
+        }],
+      width: 1000,
+      height: 1000,
+      xaxis: {
+        range: [0, 40],
+        dtick: 1
+      },
+      yaxis: {
+        range: [0, 40],
+        dtick: 1
+      }
+    };
+  
+    Plotly.newPlot('plotly-div', [trace1], layout);
+  })
 }
 
 //helping methods
@@ -424,7 +430,7 @@ $(document).ready(function () {
   displayButtons();
   alertGraph();
   trafficGraph();
-  plotFloorPlan();
+  plotFloor();
 
   setInterval(getAlertStatus, 1000 * 5);
   setInterval(temperatureChart, 1000 * 30);

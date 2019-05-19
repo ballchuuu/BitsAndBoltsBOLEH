@@ -1,19 +1,20 @@
-from flask import Flask, jsonify, request, json, render_template
-from flask_socketio import SocketIO
-from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime 
-from sqlalchemy.sql.functions import func
-from keras import load_model
-import psycopg2
-import pgpubsub
-import threading
 import datetime
-import time 
+import threading
+import time
+from datetime import datetime
 
-
-from scipy.spatial.distance import euclidean
 import numpy as np
 import pandas as pd
+import psycopg2
+from flask import Flask, json, jsonify, render_template, request
+from scipy.spatial.distance import euclidean
+
+import pgpubsub
+from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy
+from keras.models import load_model
+from models import Location
+from sqlalchemy.sql.functions import func
 
 app = Flask(__name__)
 app.debug = True #to set in staging development
@@ -26,11 +27,20 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
-from models import Location
 
 @app.route("/")
 def hello_world():
-    return "hello"
+    return render_template("index.html")
+
+@app.route("/api/crowd_report", methods=["GET", "POST"])
+def crowd_report():
+    # Load from db
+    people = [(24, 14), (25, 23), (24, 14)]
+    counter = OrderedDict(Counter(people))
+
+    return jsonify({"x": [p[0] for p in counter.keys()],
+                    "y": [p[1] for p in counter.keys()],
+                    "count": [c*10 for c in counter.values()]})
 
 exits = [
     (27, 27, 25, 31), # SR1 main exit
@@ -110,6 +120,7 @@ def find_shortest_route(x, y):
     else:
         # From primary to secondary exits
         return connect(pri_exits[0], sec_exits)
+
 
 def find_sec_shortest_route(x, y):
     # if inside(sr1, x, y):
