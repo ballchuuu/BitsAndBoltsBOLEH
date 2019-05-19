@@ -125,7 +125,7 @@ def find_shortest_route(x, y):
             if exit_count[best_exit] < 5:
                 #insert or update the db with the x,y,route(exit)
                 output = [pri_exits[best_exit]]
-                output.append(sec_exits[4])
+                output.append(sec_exits[1])
                 return output
             else:
                 distances = distances.remove(shortest)
@@ -140,8 +140,7 @@ def find_shortest_route(x, y):
             best_exit = int(distances.index(shortest))
             if exit_count[best_exit] < 5:
                 #insert or update the db with the x,y,route(exit)
-                output = [pri_exits[best_exit]]
-                output.append(sec_exits[best_exit])
+                output = [sec_exits[best_exit]]
                 return output
             else:
                 distances = distances.remove(shortest)
@@ -348,6 +347,14 @@ def getCoords(jsonObj):
 def getloc():
     jsonObj = json.loads(request.data)
     coords = getCoords(jsonObj)
+    loc = Location.query.filter_by(user=jsonObj['UUID']).all()
+    if len(loc) == 0:
+        new_loc = Location(user=jsonObj['UUID'], x=int(coords[0]), y=int(coords[1]))
+        db.session_add(new_loc)
+    else:
+        loc.x=coords[0]
+        loc.y=coords[1]
+    db.session.commit()
     output = {'x': str(coords[0]), 'y': str(coords[1])}
     output['route'] = find_shortest_route(int(coords[0]), int(coords[1]))
     return json.dumps(output)

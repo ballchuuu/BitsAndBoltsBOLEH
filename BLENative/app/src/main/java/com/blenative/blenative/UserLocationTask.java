@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -71,9 +72,10 @@ public class UserLocationTask extends AsyncTask<String, Void, String> {
 //                        myOptions.inScaled = false;
 //                        myOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;// important
 //                        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.floorplan, myOptions);
-//                        Paint paint = new Paint();
-//                        paint.setAntiAlias(true);
-//                        paint.setColor(Color.BLUE);
+                    Paint black = new Paint();
+                    black.setAntiAlias(true);
+                    black.setColor(Color.BLACK);
+                    black.setStyle(Paint.Style.FILL_AND_STROKE);
 //
                     Bitmap workingBitmap = Bitmap.createBitmap(MapActivity.bitmap);
                     Bitmap mutableBitmap = workingBitmap.copy(Bitmap.Config.ARGB_8888, true);
@@ -81,6 +83,20 @@ public class UserLocationTask extends AsyncTask<String, Void, String> {
                     Canvas canvas = new Canvas(mutableBitmap);
                     try {
                         canvas.drawCircle(finalJson.getInt("x") * 15, (40 - finalJson.getInt("y")) * 14, 10, paint);
+                        JSONArray route = finalJson.getJSONArray("route");
+                        int prevX = finalJson.getInt("x");
+                        int prevY = finalJson.getInt("y");
+                        for(int i = 0; i < route.length(); i++){
+                            JSONArray coord = route.getJSONArray(i);
+                            int nextX = Integer.parseInt(coord.getString(0));
+                            int nextY = Integer.parseInt(coord.getString(1));
+                            Log.i("route", nextX + " " + nextY);
+                            canvas.drawLine(prevX * 15, (40 - prevY) * 14,
+                                    coord.getInt(0) * 15, (40 - coord.getInt(1)) * 14, black);
+                            prevX = nextX;
+                            prevY = nextY;
+                        }
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
