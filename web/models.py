@@ -11,11 +11,10 @@ class Location(db.Model):
 	route = db.Column(db.Integer, nullable=True)
 	load_balance = db.Column(db.Boolean, nullable=True)
 	
-	def __init__(self, user, x,y,route):
+	def __init__(self, user, x,y):
 		self.user = user
 		self.x = x
 		self.y = y
-		self.route = route
 		self.load_balance = False
 
 	def __repr__(self):
