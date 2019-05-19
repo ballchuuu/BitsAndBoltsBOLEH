@@ -1,4 +1,4 @@
-import datetime
+# import threading
 import threading
 import time
 from datetime import datetime
@@ -43,7 +43,7 @@ def crowd_report():
                     "count": [c*10 for c in counter.values()]})
 
 exits = [
-    (27, 27, 25, 31), # SR1 main exit
+    (27, 27, 31, 25), # SR1 main exit
     (22, 32, 23, 30), # SR1 side exit 1
     (22, 29, 23, 27), # SR1 side exit 2
     (37, 29, 27, 40), # back of seminar rm
@@ -55,7 +55,7 @@ sr1 = (23, 37, 35, 26)
 def load_balance():
 
     exits = {0:0,1:0,2:0,3:0,4:0,5:0}
-    curr_time = datetime.datetime.utcnow()
+    curr_time = datetime.utcnow()
 
     # updates the table to remove users who have not connected for more than 60 seconds
     users = Location.query.filter_by(load_balance=False).all()
@@ -92,11 +92,18 @@ for x in range(sr1[0], sr1[2]):
         }
         sr_df = sr_df.append(row, ignore_index=True)
 
+outside_dict = {
+    'x': pri_exits[0][0],
+    'y': pri_exits[0][1],
+    'exit3': euclidean(list(pri_exits[0]), list(sec_exits[0])),
+    'exit4': euclidean(list(pri_exits[0]), list(sec_exits[1])),
+    'exit5': euclidean(list(pri_exits[0]), list(sec_exits[2])),
+}
+
+print(outside_dict)
+
 def inside(rect, x, y):
     return x >= rect[0] and x <= rect[2] and y <= rect[1] and y >= rect[3]
-
-def connect(start, ends):
-    return [[start, (p[0], p[1])] for p in ends]
 
 def find_shortest_route(x, y):
     if inside(sr1, x, y):
@@ -119,29 +126,20 @@ def find_shortest_route(x, y):
                 distances = distances.remove(shortest)
     else:
         # From primary to secondary exits
-        return connect(pri_exits[0], sec_exits)
-
-
-def find_sec_shortest_route(x, y):
-    # if inside(sr1, x, y):
-        row = sr_df[sr_df.x==x][sr_df.y==y]
-        distances = row.iloc[:, 2:].values.tolist()
+        distances = [outside_dict['exit3'], outside_dict['exit4'], outside_dict['exit5']]
         shortest = min(distances)
-
-        # get count for exit count
+        
         exit_count = load_balance()
-
         for i in range(len(exit_count.keys())):
             shortest = min(distances)
-            best_exit = int(distances.index(shortest))
+            best_exit = int(distances.index(shortest)) + 3
             if exit_count[best_exit] < 5:
                 #insert or update the db with the x,y,route(exit)
-                return [pri_exits[best_exit], find_shortest_route(pri_exits[best_exit])]
+                output = [pri_exits[best_exit]]
+                output.append(sec_exits[4])
+                return output
             else:
                 distances = distances.remove(shortest)
-    else:
-        # From primary to secondary exits
-        return connect(pri_exits[0], sec_exits)
         
 print(find_shortest_route(27, 27))
 
