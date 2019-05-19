@@ -98,14 +98,15 @@ for x in range(sr1[0], sr1[2]):
 outside_df = pd.DataFrame(columns=['x', 'y', 'exit3', 'exit4', 'exit5'])
 for x in range(area[0], area[2]):
     for y in range(area[3], area[1]):
-        row = {
-            'x': x,
-            'y': y,
-            'exit3': euclidean([x, y], list(sec_exits[0])),
-            'exit4': euclidean([x, y], list(sec_exits[1])),
-            'exit5': euclidean([x, y], list(sec_exits[2]))
-        }
-        outside_df = outside_df.append(row, ignore_index=True)
+        if not inside(sr1, x, y):
+            row = {
+                'x': x,
+                'y': y,
+                'exit3': euclidean([x, y], list(sec_exits[0])),
+                'exit4': euclidean([x, y], list(sec_exits[1])),
+                'exit5': euclidean([x, y], list(sec_exits[2]))
+            }
+            outside_df = outside_df.append(row, ignore_index=True)
 
 def inside(rect, x, y):
     return x >= rect[0] and x <= rect[2] and y <= rect[1] and y >= rect[3]
